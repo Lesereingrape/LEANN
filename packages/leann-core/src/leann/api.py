@@ -556,7 +556,14 @@ class LeannBuilder:
     def add_text(self, text: str, metadata: Optional[dict[str, Any]] = None):
         if metadata is None:
             metadata = {}
-        passage_id = metadata.get("id") or self._generate_passage_id(text)
+        # An explicit ID is honoured even when it is falsy -- integer dataset IDs start
+        # at 0 -- and is stored as a string, because PassageManager keys offsets by the
+        # same string the backend hands back for a label.
+        explicit_id = metadata.get("id")
+        if explicit_id is None or str(explicit_id) == "":
+            passage_id = self._generate_passage_id(text)
+        else:
+            passage_id = str(explicit_id)
         chunk_data = {"id": passage_id, "text": text, "metadata": metadata}
         self.chunks.append(chunk_data)
 
